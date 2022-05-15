@@ -8,12 +8,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.IOException;
+import javax.sound.sampled.AudioFormat;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
 
 @RestController
     public class UserController {
-        static ObjectMapper objectMapper = new ObjectMapper();
 
         public UserController() throws IOException {
 
@@ -21,22 +23,39 @@ import java.io.IOException;
             User u2 = new User(2, "Bartosz", "bartosz@gmail.com");
             User u3 = new User(3, "Krystyna", "krystyna@gmail.com");
 
-            //objectMapper.writeValue(new File("target/user.json"), u1);
-            //objectMapper.writeValue(new File("target/user.json"), u2);
-            //objectMapper.writeValue(new File("target/user.json"), u3);
+            ArrayList<User> userList = new ArrayList<>();
+            userList.add(u1);
+            userList.add(u2);
+            userList.add(u3);
 
-            //User user = objectMapper.readValue(json, User.class);
-            //String userJson = objectMapper.writeValueAsString(u1);
-            //String userJson2 = objectMapper.writeValueAsString(u2);
-            //String userJson3 = objectMapper.writeValueAsString(u3);
+//            objectMapper.writeValue(new File("target/user.json"), u1);
+//            objectMapper.writeValue(new File("target/user.json"), u2);
+//            objectMapper.writeValue(new File("target/user.json"), u3);
+//
+//            User user = objectMapper.readValue(json, User.class);
+//            String userJson = objectMapper.writeValueAsString(u1);
+//            String userJson2 = objectMapper.writeValueAsString(u2);
+//            String userJson3 = objectMapper.writeValueAsString(u3);
+//
+//            ArrayList<String> array = new ArrayList<String>();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            String userJson = objectMapper.writeValueAsString(userList);
+
+            try (FileOutputStream stream = new FileOutputStream("users.json");
+                 Writer writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+                writer.write(userJson);
+                writer.flush();
+            }
+
+
+//            System.out.println(userJson); // {"name":"John","age":21}
         }
 
         @RequestMapping(value = "/users", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
         @ResponseBody
-        public String page(@RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "1") int pageSize, @RequestBody String userJson,
-                           @RequestBody User user) throws IOException {
-            objectMapper.writeValue(new File("target/user.json"), user);
-            userJson = objectMapper.writeValueAsString(user);
+        public String page(@RequestParam(defaultValue = "1") int pageNumber, @RequestParam(defaultValue = "1") int pageSize, @RequestBody String userJson){
             if ((pageNumber < 1 || pageNumber > 100) || (pageSize < 1 || pageSize > 100)) {
                 return "Conajmniej jeden niewłaściwy parametr";
             }
